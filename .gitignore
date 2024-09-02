@@ -3,8 +3,9 @@
 node_modules/
 
 # Ignore log file
-slowquery-log/
-digest/
+slowquery-log/*
+digest/*
+
 
 
 # Ignore build output
