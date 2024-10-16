@@ -7,7 +7,6 @@ slowquery-log/*
 digest/*
 
 
-
 # Ignore build output
 dist/
 
