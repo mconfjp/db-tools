@@ -42,13 +42,19 @@ async function getLogsFromCloudWatch(startTime: Date, endTime: Date): Promise<st
         endTime: endTime.getTime()
     };
 
-    const response = await cloudWatchLogs.filterLogEvents(params).promise();
+    
+    let logs: string[] = [];
+    let nextToken: string | undefined;
 
-    if (response.events) {
-        return response.events.map(event => event.message || '');
-    } else {
-        return [];
-    }
+    do {
+        const response = await cloudWatchLogs.filterLogEvents({ ...params, nextToken }).promise();
+        if (response.events) {
+            logs = logs.concat(response.events.map(event => event.message || ''));
+        }
+        nextToken = response.nextToken;
+    } while (nextToken);
+
+    return logs;
 }
 
 getLogsFromCloudWatch(startTime, endTime)
