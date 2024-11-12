@@ -53,10 +53,34 @@ const dotenv_1 = __importDefault(require("dotenv"));
  * 各種設定
  */
 dotenv_1.default.config();
+// 整形
 const startTime = new Date(process.env.START_TIME_STR);
 const endTime = new Date(process.env.END_TIME_STR);
 const outputFile = path.join(__dirname, `slowquery-log/raw-${process.env.START_TIME_STR}.log`);
 function getLogsFromCloudWatch(startTime, endTime) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const cloudWatchLogs = yield getCloudWatch();
+        const timePairs = yield sliceTime(startTime, endTime);
+        let logs = [];
+        for (const timePair of timePairs) {
+            const params = {
+                logGroupName: process.env.LOG_GROUP_NAME,
+                startTime: timePair.start.getTime(),
+                endTime: timePair.end.getTime()
+            };
+            let nextToken;
+            do {
+                const response = yield cloudWatchLogs.filterLogEvents(Object.assign(Object.assign({}, params), { nextToken })).promise();
+                if (response.events) {
+                    logs = logs.concat(response.events.map((event) => event.message || ''));
+                }
+                nextToken = response.nextToken;
+            } while (nextToken);
+        }
+        return logs;
+    });
+}
+function getCloudWatch() {
     return __awaiter(this, void 0, void 0, function* () {
         aws_sdk_1.default.config.update({ region: process.env.AWS_REGION });
         // クレデンシャル情報の設定
@@ -65,19 +89,25 @@ function getLogsFromCloudWatch(startTime, endTime) {
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
             sessionToken: process.env.AWS_SESSION_TOKEN
         });
-        const cloudWatchLogs = new aws_sdk_1.default.CloudWatchLogs();
-        const params = {
-            logGroupName: process.env.LOG_GROUP_NAME,
-            startTime: startTime.getTime(),
-            endTime: endTime.getTime()
-        };
-        const response = yield cloudWatchLogs.filterLogEvents(params).promise();
-        if (response.events) {
-            return response.events.map(event => event.message || '');
+        return new aws_sdk_1.default.CloudWatchLogs();
+    });
+}
+function sliceTime(startTime, endTime) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let timePairs = [];
+        let currentStartTime = new Date(startTime.getTime());
+        let currentEndTime = new Date(currentStartTime);
+        currentEndTime.setHours(23, 59, 59, 999);
+        while (currentStartTime < endTime) {
+            if (currentEndTime > endTime) {
+                currentEndTime = new Date(endTime.getTime());
+            }
+            timePairs.push({ start: new Date(currentStartTime.getTime()), end: new Date(currentEndTime.getTime()) });
+            currentStartTime = new Date(currentEndTime.getTime() + 1);
+            currentEndTime = new Date(currentStartTime);
+            currentEndTime.setHours(23, 59, 59, 999);
         }
-        else {
-            return [];
-        }
+        return timePairs;
     });
 }
 getLogsFromCloudWatch(startTime, endTime)

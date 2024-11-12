@@ -26,6 +26,33 @@ const outputFile = path.join(__dirname, `slowquery-log/raw-${process.env.START_T
 
 async function getLogsFromCloudWatch(startTime: Date, endTime: Date): Promise<string[]> 
 {
+    const cloudWatchLogs = await getCloudWatch();
+
+    const timePairs = await sliceTime(startTime, endTime);
+    
+    let logs: string[] = [];
+
+    for (const timePair of timePairs) {
+        const params = {
+            logGroupName: process.env.LOG_GROUP_NAME,
+            startTime: timePair.start.getTime(),
+            endTime: timePair.end.getTime()
+        };
+
+        let nextToken: string | undefined;
+        do {
+            const response = await cloudWatchLogs.filterLogEvents({ ...params, nextToken }).promise();
+            if (response.events) {
+                logs = logs.concat(response.events.map((event: AWS.CloudWatchLogs.FilteredLogEvent) => event.message || ''));
+            }
+            nextToken = response.nextToken;
+        } while (nextToken);
+    }
+
+    return logs;
+}
+
+async function getCloudWatch(): Promise<AWS.CloudWatchLogs> {
     AWS.config.update({ region: process.env.AWS_REGION });
 
     // クレデンシャル情報の設定
@@ -34,27 +61,28 @@ async function getLogsFromCloudWatch(startTime: Date, endTime: Date): Promise<st
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
         sessionToken: process.env.AWS_SESSION_TOKEN
     });
-    const cloudWatchLogs = new AWS.CloudWatchLogs();
+    return new AWS.CloudWatchLogs();
+}
 
-    const params = {
-        logGroupName: process.env.LOG_GROUP_NAME,
-        startTime: startTime.getTime(),
-        endTime: endTime.getTime()
-    };
+async function sliceTime(startTime: Date, endTime: Date): Promise<{ start: Date, end: Date }[]> 
+{
+    let timePairs: { start: Date, end: Date }[] = [];
+    let currentStartTime = new Date(startTime.getTime());
+    let currentEndTime = new Date(currentStartTime);
+    currentEndTime.setHours(23, 59, 59, 999);
 
-    
-    let logs: string[] = [];
-    let nextToken: string | undefined;
-
-    do {
-        const response = await cloudWatchLogs.filterLogEvents({ ...params, nextToken }).promise();
-        if (response.events) {
-            logs = logs.concat(response.events.map(event => event.message || ''));
+    while (currentStartTime < endTime) {
+        if (currentEndTime > endTime) {
+            currentEndTime = new Date(endTime.getTime());
         }
-        nextToken = response.nextToken;
-    } while (nextToken);
+        timePairs.push({ start: new Date(currentStartTime.getTime()), end: new Date(currentEndTime.getTime()) });
 
-    return logs;
+        currentStartTime = new Date(currentEndTime.getTime() + 1);
+        currentEndTime = new Date(currentStartTime);
+        currentEndTime.setHours(23, 59, 59, 999);
+    }
+
+    return timePairs;
 }
 
 getLogsFromCloudWatch(startTime, endTime)
