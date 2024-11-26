@@ -16,5 +16,7 @@
     - 取得したい時間帯の指定
 - `yarn node index.js`
 - `pt-query-digest`の実行
-    - `pt-query-digest ./slowquery-log/raw-20240902.log > digest/slow-summary.log`
+    - `pt-query-digest ./slowquery-log/raw-2024-09-02.log > digest/slow-summary-yymmdd.log`
+    - 良いオプション
+        - --filter '$event->{user} ne "除外したいユーザー名"'
 

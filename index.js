@@ -34,6 +34,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
 const fs = __importStar(require("fs"));
@@ -56,7 +57,7 @@ dotenv_1.default.config();
 // 整形
 const startTime = new Date(process.env.START_TIME_STR);
 const endTime = new Date(process.env.END_TIME_STR);
-const outputFile = path.join(__dirname, `slowquery-log/raw-${process.env.START_TIME_STR}.log`);
+const outputFile = path.join(__dirname, `slowquery-log/raw-${(_a = process.env.START_TIME_STR) === null || _a === void 0 ? void 0 : _a.split('T')[0]}.log`);
 function getLogsFromCloudWatch(startTime, endTime) {
     return __awaiter(this, void 0, void 0, function* () {
         const cloudWatchLogs = yield getCloudWatch();

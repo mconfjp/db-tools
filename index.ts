@@ -22,7 +22,7 @@ dotenv.config();
 // 整形
 const startTime = new Date(process.env.START_TIME_STR as string);
 const endTime = new Date(process.env.END_TIME_STR as string);
-const outputFile = path.join(__dirname, `slowquery-log/raw-${process.env.START_TIME_STR as string}.log`);
+const outputFile = path.join(__dirname, `slowquery-log/raw-${process.env.START_TIME_STR?.split('T')[0]}.log`);
 
 async function getLogsFromCloudWatch(startTime: Date, endTime: Date): Promise<string[]> 
 {
