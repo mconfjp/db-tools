@@ -1,0 +1,29 @@
+{
+  "name": "mysql-general-query-analyzer",
+  "version": "1.0.0",
+  "description": "MySQL General Query Log Analyzer - Extract and analyze queries from MySQL general query logs",
+  "main": "general-query-extractor.ts",
+  "scripts": {
+    "extract": "npx ts-node general-query-extractor.ts",
+    "test": "npx ts-node general-query-extractor.ts samples/sample-general-query.log --format json",
+    "help": "npx ts-node general-query-extractor.ts --help"
+  },
+  "keywords": [
+    "mysql",
+    "query",
+    "log",
+    "analyzer",
+    "extractor",
+    "database",
+    "cli"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^5.5.4",
+    "ts-node": "^10.9.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

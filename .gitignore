@@ -16,6 +16,7 @@ dist/
 
 # Ignore log files
 *.log
+*.txt
 
 # Ignore temporary files
 *.tmp
