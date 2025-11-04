@@ -54,7 +54,7 @@ npx ts-node general-query-extractor.ts --help
 
 ```bash
 # performance_schemaとinformation_schemaを除外し、Queryコマンドのみを抽出
-npx ts-node general-query-extractor.ts samples/mysql-general.log.2025-10-31.00 \
+npx ts-node general-query-extractor.ts input/mysql-general.log.2025-10-31.00 \
   --include-commands "Execute" \
   --exclude-schemas "performance_schema,information_schema" \
   --output output/app-queries.txt
