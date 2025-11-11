@@ -6,13 +6,18 @@ node_modules/
 slowquery-log/*
 digest/*
 
-
 # Ignore build output
 dist/
 
 # Ignore IDE specific files
 .idea/
 .vscode/
+
+# Ignore query analyzer files
+general-query-analyzer/input/*
+general-query-analyzer/mid-output/*
+general-query-analyzer/mid-output-2/*
+general-query-analyzer/output/*
 
 # Ignore log files
 *.log
@@ -26,6 +31,7 @@ dist/
 *.dll
 *.so
 *.dylib
+*.DS_Store
 
 # Ignore package-lock.json for npm
 package-lock.json
